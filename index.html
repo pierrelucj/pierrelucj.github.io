@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Golf Dots">
+<meta name="theme-color" content="#1a2e1a">
+<title>Golf Dots Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<style>
+  :root {
+    --green-deep: #1a2e1a;
+    --green-mid: #2d4f2d;
+    --green-light: #3d6b3d;
+    --green-bright: #5a9e5a;
+    --green-pale: #a8d5a2;
+    --gold: #d4a843;
+    --gold-light: #f0c96a;
+    --gold-pale: #fdf3dc;
+    --cream: #f8f4ec;
+    --red-dot: #c0392b;
+    --blue-dot: #2471a3;
+    --sand: #e8d5a3;
+    --text-dark: #1a1a1a;
+    --text-mid: #4a4a4a;
+    --text-light: #8a8a8a;
+    --white: #ffffff;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.15);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--green-deep);
+    color: var(--cream);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior: none;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--green-deep);
+    padding: env(safe-area-inset-top, 12px) 16px 12px;
+    border-bottom: 1px solid var(--green-mid);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    color: var(--gold-light);
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-btn {
+    background: none;
+    border: 1px solid var(--green-light);
+    color: var(--green-pale);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: 'Helvetica Neue', sans-serif;
+    cursor: pointer;
+  }
+
+  /* ── Screens ── */
+  .screen { display: none; flex: 1; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 20px); }
+  .screen.active { display: block; }
+
+  /* ── Setup Screen ── */
+  .setup-hero {
+    background: linear-gradient(160deg, var(--green-mid), var(--green-deep));
+    padding: 32px 20px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--green-light);
+  }
+
+  .setup-hero h1 {
+    font-size: 32px;
+    color: var(--gold-light);
+    font-weight: normal;
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+  }
+
+  .setup-hero p {
+    font-size: 13px;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .flag-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .section {
+    padding: 16px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    margin-bottom: 10px;
+  }
+
+  .player-card {
+    background: var(--green-mid);
+    border-radius: var(--radius);
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .player-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--green-light);
+    color: var(--gold-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  input[type=text], input[type=number] {
+    background: var(--green-deep);
+    border: 1px solid var(--green-light);
+    border-radius: var(--radius-sm);
+    color: var(--cream);
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: 'Georgia', serif;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  input[type=text]::placeholder { color: var(--text-light); }
+  input[type=number] { text-align: center; font-family: 'Helvetica Neue', sans-serif; }
+  input:focus { outline: 2px solid var(--gold); border-color: var(--gold); }
+
+  .hcp-input { width: 64px; flex-shrink: 0; }
+
+  .divider {
+    height: 1px;
+    background: var(--green-light);
+    margin: 4px 16px;
+    opacity: 0.4;
+  }
+
+  .settings-row {
+    background: var(--green-mid);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .settings-row label {
+    font-size: 14px;
+    color: var(--cream);
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  .settings-row input[type=number] {
+    width: 72px;
+  }
+
+  .btn-start {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 8px 16px 16px;
+    padding: 16px;
+    background: var(--gold);
+    color: var(--green-deep);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 17px;
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: var(--shadow);
+  }
+
+  .btn-start:active { transform: scale(0.98); background: var(--gold-light); }
+
+  /* ── Scoreboard ── */
+  .scoreboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 12px;
+    background: var(--green-deep);
+    border-bottom: 1px solid var(--green-mid);
+  }
+
+  .score-card {
+    background: var(--green-mid);
+    border-radius: var(--radius-sm);
+    padding: 8px 4px;
+    text-align: center;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+
+  .score-card.leader { border-color: var(--gold); }
+
+  .score-card-name {
+    font-size: 10px;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 2px;
+    margin-bottom: 2px;
+  }
+
+  .score-card-dots {
+    font-size: 22px;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+
+  .score-card-skins {
+    font-size: 10px;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    margin-top: 2px;
+  }
+
+  /* ── Tab Bar ── */
+  .tab-bar {
+    display: flex;
+    background: var(--green-deep);
+    border-bottom: 1px solid var(--green-mid);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 11px 4px;
+    background: none;
+    border: none;
+    color: var(--green-pale);
+    font-size: 11px;
+    font-family: 'Helvetica Neue', sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .tab-btn.active {
+    color: var(--gold-light);
+    border-bottom-color: var(--gold);
+  }
+
+  /* ── Hole Entry ── */
+  .hole-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--green-mid);
+    border-bottom: 1px solid var(--green-light);
+  }
+
+  .hole-nav-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--green-light);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--cream);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hole-nav-btn:active { transform: scale(0.92); }
+  .hole-nav-btn:disabled { opacity: 0.3; }
+
+  .hole-info { text-align: center; }
+  .hole-num { font-size: 22px; color: var(--gold-light); }
+  .hole-saved { font-size: 11px; color: var(--green-pale); font-family: 'Helvetica Neue', sans-serif; }
+
+  .par-row {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--green-deep);
+    border-bottom: 1px solid var(--green-mid);
+    align-items: center;
+  }
+
+  .par-label { font-size: 12px; color: var(--green-pale); font-family: 'Helvetica Neue', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 4px; }
+
+  .par-btn {
+    flex: 1;
+    padding: 9px 0;
+    background: var(--green-mid);
+    border: 1px solid var(--green-light);
+    border-radius: var(--radius-sm);
+    color: var(--green-pale);
+    font-size: 15px;
+    font-family: 'Helvetica Neue', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .par-btn.active {
+    background: var(--gold);
+    color: var(--green-deep);
+    border-color: var(--gold);
+    font-weight: bold;
+  }
+
+  .carry-bar {
+    background: var(--green-deep);
+    padding: 6px 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--green-mid);
+  }
+
+  .carry-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(212,168,67,0.15);
+    color: var(--gold-light);
+    border: 1px solid rgba(212,168,67,0.3);
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  /* ── Player Scoring Rows ── */
+  .player-scoring {
+    border-bottom: 1px solid var(--green-mid);
+    background: var(--green-deep);
+  }
+
+  .player-scoring-header {
+    padding: 10px 12px 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .player-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--green-light);
+    color: var(--gold-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-family: 'Helvetica Neue', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .player-scoring-name { font-size: 14px; color: var(--cream); flex: 1; }
+  .player-dots-preview { font-size: 13px; color: var(--gold-light); font-family: 'Helvetica Neue', sans-serif; }
+
+  .score-inputs-row {
+    padding: 0 12px 8px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .score-field { flex: 1; }
+  .score-field-label { font-size: 10px; color: var(--text-light); font-family: 'Helvetica Neue', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .score-field input { font-size: 18px; padding: 8px; }
+
+  .badges-row {
+    padding: 0 12px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'Helvetica Neue', sans-serif;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .badge:active { transform: scale(0.94); }
+
+  .badge.earn-off {
+    background: var(--green-mid);
+    border-color: var(--green-light);
+    color: var(--green-pale);
+  }
+
+  .badge.earn-on {
+    background: rgba(90,158,90,0.25);
+    border-color: var(--green-bright);
+    color: #a8e6a3;
+  }
+
+  .badge.give-off {
+    background: var(--green-mid);
+    border-color: var(--green-light);
+    color: var(--green-pale);
+  }
+
+  .badge.give-on {
+    background: rgba(192,57,43,0.2);
+    border-color: #c0392b;
+    color: #f1948a;
+  }
+
+  /* ── Closest / Murphy sections ── */
+  .special-section {
+    margin: 0 12px 8px;
+    background: var(--green-mid);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .special-header {
+    padding: 8px 12px;
+    background: var(--green-light);
+    font-size: 11px;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .closest-btns {
+    padding: 10px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .closest-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--green-light);
+    background: transparent;
+    color: var(--green-pale);
+    font-size: 13px;
+    font-family: 'Helvetica Neue', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .closest-btn.active {
+    background: rgba(90,158,90,0.3);
+    border-color: var(--green-bright);
+    color: #a8e6a3;
+  }
+
+  .murphy-results {
+    padding: 6px 12px 10px;
+  }
+
+  .murphy-player-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .murphy-player-name {
+    font-size: 13px;
+    color: var(--cream);
+    flex: 1;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  .murphy-outcome-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--green-light);
+    background: transparent;
+    color: var(--green-pale);
+    font-size: 12px;
+    font-family: 'Helvetica Neue', sans-serif;
+    cursor: pointer;
+  }
+
+  .murphy-outcome-btn.made {
+    background: rgba(90,158,90,0.3);
+    border-color: var(--green-bright);
+    color: #a8e6a3;
+  }
+
+  .murphy-outcome-btn.missed {
+    background: rgba(192,57,43,0.2);
+    border-color: #c0392b;
+    color: #f1948a;
+  }
+
+  /* ── Save Button ── */
+  .save-hole-btn {
+    display: block;
+    width: calc(100% - 24px);
+    margin: 12px;
+    padding: 16px;
+    background: var(--gold);
+    color: var(--green-deep);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 16px;
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+
+  .save-hole-btn:active { transform: scale(0.98); }
+
+  /* ── Log Screen ── */
+  .log-hole-block {
+    margin: 12px 12px 0;
+    background: var(--green-mid);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .log-hole-header {
+    background: var(--green-light);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .log-hole-title {
+    font-size: 13px;
+    color: var(--cream);
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: bold;
+  }
+
+  .log-hole-par {
+    font-size: 11px;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  .log-event {
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .log-event:last-child { border-bottom: none; }
+  .log-event.earn { color: #a8e6a3; }
+  .log-event.give { color: #f1948a; }
+  .log-event.skin { color: var(--gold-light); }
+  .log-event.carry { color: var(--sand); }
+
+  .log-empty {
+    padding: 32px;
+    text-align: center;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+  }
+
+  /* ── Summary Screen ── */
+  .summary-header {
+    background: linear-gradient(160deg, var(--green-mid), var(--green-deep));
+    padding: 20px 16px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--green-light);
+  }
+
+  .summary-title {
+    font-size: 13px;
+    color: var(--green-pale);
+    font-family: 'Helvetica Neue', sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .carry-warnings {
+    padding: 10px 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .carry-warning {
+    background: rgba(212,168,67,0.1);
+    border: 1px solid rgba(212,168,67,0.3);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--gold-light);
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  .standings-table {
+    margin: 12px;
+    background: var(--green-mid);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .standings-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 48px 48px 64px;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    gap: 6px;
+  }
+
+  .standings-row:last-child { border-bottom: none; }
+
+  .standings-row.header-row {
+    background: var(--green-light);
+    padding: 8px 12px;
+  }
+
+  .standings-cell {
+    font-size: 13px;
+    color: var(--cream);
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  .standings-cell.header {
+    font-size: 10px;
+    color: var(--green-pale);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .standings-cell.rank { color: var(--gold-light); font-size: 16px; text-align: center; }
+  .standings-cell.dots { font-size: 18px; color: var(--gold-light); text-align: right; }
+  .standings-cell.skins { text-align: right; color: var(--green-pale); }
+  .standings-cell.money { text-align: right; color: var(--green-pale); }
+
+  .standings-row.first-place .standings-cell { color: var(--gold-light); }
+  .standings-row.first-place { background: rgba(212,168,67,0.08); }
+
+  /* ── New game button ── */
+  .new-game-btn {
+    display: block;
+    width: calc(100% - 24px);
+    margin: 8px 12px 16px;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid var(--green-light);
+    border-radius: var(--radius);
+    color: var(--green-pale);
+    font-size: 14px;
+    font-family: 'Helvetica Neue', sans-serif;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .new-game-btn:active { background: var(--green-mid); }
+
+  /* ── Install prompt ── */
+  .install-banner {
+    margin: 12px;
+    background: rgba(212,168,67,0.12);
+    border: 1px solid rgba(212,168,67,0.4);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: none;
+  }
+
+  .install-banner.show { display: block; }
+  .install-banner-title { font-size: 13px; color: var(--gold-light); margin-bottom: 4px; }
+  .install-banner-text { font-size: 12px; color: var(--green-pale); font-family: 'Helvetica Neue', sans-serif; line-height: 1.5; }
+  .install-dismiss { margin-top: 8px; font-size: 12px; color: var(--green-pale); cursor: pointer; font-family: 'Helvetica Neue', sans-serif; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen" class="screen active">
+    <div class="setup-hero">
+      <span class="flag-icon">⛳</span>
+      <h1>Golf Dots</h1>
+      <p>Track your custom game</p>
+    </div>
+
+    <div id="install-banner" class="install-banner">
+      <div class="install-banner-title">📲 Add to Home Screen</div>
+      <div class="install-banner-text" id="install-text">Tap the Share button below, then "Add to Home Screen" to use this as an app.</div>
+      <div class="install-dismiss" onclick="dismissInstall()">Got it</div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Players & Handicaps</div>
+      <div id="player-inputs"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="section">
+      <div class="section-label">Settings</div>
+      <div class="settings-row">
+        <label>$ per dot</label>
+        <input type="number" id="dot-value" value="1" min="0" step="0.5" style="width:72px;">
+      </div>
+    </div>
+    <button class="btn-start" onclick="startGame()">Start Round ›</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen">
+    <div class="header">
+      <div>
+        <div class="header-title">Golf Dots</div>
+        <div class="header-sub" id="header-sub">Hole 1 of 18</div>
+      </div>
+      <button class="header-btn" onclick="confirmNewGame()">New Round</button>
+    </div>
+
+    <div class="scoreboard" id="scoreboard"></div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('hole')">Hole</button>
+      <button class="tab-btn" onclick="switchTab('log')">Log</button>
+      <button class="tab-btn" onclick="switchTab('summary')">Summary</button>
+    </div>
+
+    <!-- Hole Tab -->
+    <div id="tab-hole">
+      <div class="hole-nav-bar">
+        <button class="hole-nav-btn" onclick="prevHole()" id="btn-prev">‹</button>
+        <div class="hole-info">
+          <div class="hole-num" id="hole-display">Hole 1</div>
+          <div class="hole-saved" id="hole-saved-status"></div>
+        </div>
+        <button class="hole-nav-btn" onclick="nextHole()" id="btn-next">›</button>
+      </div>
+      <div class="par-row">
+        <span class="par-label">Par</span>
+        <button class="par-btn" onclick="setPar(3)" id="par3">3</button>
+        <button class="par-btn" onclick="setPar(4)" id="par4">4</button>
+        <button class="par-btn" onclick="setPar(5)" id="par5">5</button>
+      </div>
+      <div class="carry-bar" id="carry-bar"></div>
+      <div id="scoring-section"></div>
+      <div id="special-section"></div>
+      <button class="save-hole-btn" onclick="saveHole()">Save Hole ✓</button>
+    </div>
+
+    <!-- Log Tab -->
+    <div id="tab-log" style="display:none;">
+      <div id="log-content"></div>
+    </div>
+
+    <!-- Summary Tab -->
+    <div id="tab-summary" style="display:none;">
+      <div class="summary-header">
+        <div class="summary-title">Standings</div>
+      </div>
+      <div id="carry-warnings"></div>
+      <div class="standings-table" id="standings-table"></div>
+      <button class="new-game-btn" onclick="confirmNewGame()">Start New Round</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const FIB = [0,1,1,2,3,5,8,13,21,34,55];
+function fibDots(n){ return n<=0?0:FIB[Math.min(n,10)]; }
+
+let S = {
+  players: [],
+  dotValue: 1,
+  holes: {},
+  cur: 1,
+  skinCarry: 1,
+  greenieCarry: 1,
+  blueCarry: 1,
+};
+
+function initials(name){ return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+
+function emptyHole(){
+  return {
+    par: 4,
+    saved: false,
+    log: [],
+    scores: S.players.map(()=>({
+      strokes: '', putts: '',
+      badges: [],
+      giveBadges: [],
+      closestGreen: false,
+      closestBlue: false,
+      murphyCalled: false,
+      murphyResult: null
+    }))
+  };
+}
+
+function getHole(h){
+  if(!S.holes[h]) S.holes[h] = emptyHole();
+  return S.holes[h];
+}
+
+/* ── Setup ── */
+function initSetup(){
+  const cont = document.getElementById('player-inputs');
+  cont.innerHTML = '';
+  for(let i=0;i<4;i++){
+    cont.innerHTML += `
+    <div class="player-card">
+      <div class="player-num">${i+1}</div>
+      <input type="text" placeholder="Player ${i+1}" id="pname${i}" style="flex:1;">
+      <input type="number" placeholder="HCP" id="phcp${i}" value="0" min="0" max="54" class="hcp-input" style="width:64px;">
+    </div>`;
+  }
+  showInstallBanner();
+}
+
+function showInstallBanner(){
+  const banner = document.getElementById('install-banner');
+  const ua = navigator.userAgent;
+  const isIOS = /iphone|ipad|ipod/i.test(ua);
+  const isAndroid = /android/i.test(ua);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if(isStandalone || sessionStorage.getItem('installDismissed')) return;
+  if(isIOS){
+    document.getElementById('install-text').textContent = 'Tap the Share button (⬆) then "Add to Home Screen" to use as an app.';
+    banner.classList.add('show');
+  } else if(isAndroid){
+    document.getElementById('install-text').textContent = 'Tap the menu (⋮) then "Add to Home Screen" or "Install App".';
+    banner.classList.add('show');
+  }
+}
+
+function dismissInstall(){ sessionStorage.setItem('installDismissed','1'); document.getElementById('install-banner').classList.remove('show'); }
+
+function startGame(){
+  S.players = [];
+  for(let i=0;i<4;i++){
+    const name = document.getElementById(`pname${i}`).value.trim() || `P${i+1}`;
+    const hcp = parseInt(document.getElementById(`phcp${i}`).value)||0;
+    S.players.push({name, hcp, dots:0, skins:0});
+  }
+  S.dotValue = parseFloat(document.getElementById('dot-value').value)||1;
+  S.holes = {}; S.cur = 1; S.skinCarry = 1; S.greenieCarry = 1; S.blueCarry = 1;
+  document.getElementById('setup-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+  renderAll();
+}
+
+function confirmNewGame(){
+  if(confirm('Start a new round? Current scores will be lost.')) newGame();
+}
+
+function newGame(){
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('setup-screen').classList.add('active');
+  S.players.forEach(p=>{ p.dots=0; p.skins=0; });
+}
+
+/* ── Rendering ── */
+function renderAll(){
+  renderScoreboard();
+  renderHole();
+  updateCarryBar();
+  document.getElementById('header-sub').textContent = `Hole ${S.cur} of 18`;
+}
+
+function renderScoreboard(){
+  const maxDots = Math.max(...S.players.map(p=>p.dots));
+  document.getElementById('scoreboard').innerHTML = S.players.map((p,i)=>`
+    <div class="score-card ${p.dots===maxDots && maxDots>0?'leader':''}">
+      <div class="score-card-name">${p.name}</div>
+      <div class="score-card-dots">${p.dots}</div>
+      <div class="score-card-skins">${p.skins}sk</div>
+    </div>`).join('');
+}
+
+function renderHole(){
+  const h = S.cur;
+  const hole = getHole(h);
+  document.getElementById('hole-display').textContent = `Hole ${h}`;
+  document.getElementById('hole-saved-status').textContent = hole.saved ? '✓ saved' : '';
+  document.getElementById('btn-prev').disabled = h<=1;
+  document.getElementById('btn-next').disabled = h>=18;
+  [3,4,5].forEach(p=>{ document.getElementById(`par${p}`).classList.toggle('active', hole.par===p); });
+  renderScoring();
+  renderSpecials();
+  updateCarryBar();
+}
+
+function updateCarryBar(){
+  const cb = document.getElementById('carry-bar');
+  const pills = [];
+  if(S.skinCarry>1) pills.push(`Skins pot: ${S.skinCarry}`);
+  if(S.greenieCarry>1) pills.push(`Greenie carry: ${S.greenieCarry}`);
+  if(S.blueCarry>1) pills.push(`Blue Plate carry: ${S.blueCarry}`);
+  cb.innerHTML = pills.map(t=>`<span class="carry-pill">${t}</span>`).join('');
+  cb.style.display = pills.length ? 'flex' : 'none';
+}
+
+function renderScoring(){
+  const hole = getHole(S.cur);
+  const par = hole.par;
+  let html = '';
+  S.players.forEach((pl,i)=>{
+    const sc = hole.scores[i];
+    const sandyCount = sc.badges.filter(b=>b==='sandy').length;
+    html += `
+    <div class="player-scoring">
+      <div class="player-scoring-header">
+        <div class="player-avatar">${initials(pl.name)}</div>
+        <div class="player-scoring-name">${pl.name}</div>
+        <div class="player-dots-preview">${pl.dots} dots</div>
+      </div>
+      <div class="score-inputs-row">
+        <div class="score-field">
+          <div class="score-field-label">Strokes</div>
+          <input type="number" inputmode="numeric" value="${sc.strokes}" min="1" max="15" onchange="upd(${i},'strokes',this.value)">
+        </div>
+        <div class="score-field">
+          <div class="score-field-label">Putts</div>
+          <input type="number" inputmode="numeric" value="${sc.putts}" min="0" max="12" onchange="upd(${i},'putts',this.value)">
+        </div>
+      </div>
+      <div class="badges-row">
+        ${earnBadge(i,sc,'birdie','Birdie')}
+        ${earnBadge(i,sc,'eagle','Eagle')}
+        ${earnBadge(i,sc,'albatross','Albatross')}
+        ${earnBadge(i,sc,'poley','Poley')}
+        <span class="badge ${sandyCount>0?'earn-on':'earn-off'}" onclick="addSandy(${i})">${sandyCount>0?`Sandy ×${sandyCount}`:'Sandy'}</span>
+        ${sandyCount>0?`<span class="badge earn-on" onclick="rmSandy(${i})" style="padding:5px 7px;">−</span>`:''}
+        ${earnBadge(i,sc,'barky','Barky')}
+        ${earnBadge(i,sc,'chippy','Chippy')}
+        ${earnBadge(i,sc,'murphy','Murphy')}
+        ${giveBadge(i,sc,'snake','🐍 Snake')}
+        ${giveBadge(i,sc,'crabby','🦀 Crabby')}
+        ${giveBadge(i,sc,'cheatie','Cheatie')}
+        ${giveBadge(i,sc,'tincup','Tin Cup')}
+      </div>
+    </div>`;
+  });
+  document.getElementById('scoring-section').innerHTML = html;
+}
+
+function earnBadge(pi, sc, key, label){
+  const on = sc.badges.includes(key);
+  return `<span class="badge ${on?'earn-on':'earn-off'}" onclick="toggleBadge(${pi},'${key}')">${label}</span>`;
+}
+
+function giveBadge(pi, sc, key, label){
+  const on = sc.giveBadges.includes(key);
+  return `<span class="badge ${on?'give-on':'give-off'}" onclick="toggleGive(${pi},'${key}')">${label}</span>`;
+}
+
+function renderSpecials(){
+  const hole = getHole(S.cur);
+  const par = hole.par;
+  let html = '';
+
+  if(par===3){
+    html += `<div class="special-section">
+      <div class="special-header">Greenie — closest to pin (carries ${S.greenieCarry})</div>
+      <div class="closest-btns">
+        ${S.players.map((p,i)=>`<button class="closest-btn ${hole.scores[i].closestGreen?'active':''}" onclick="setClosest(${i},'green')">${p.name}</button>`).join('')}
+        <button class="closest-btn ${!hole.scores.some(s=>s.closestGreen)?'active':''}" onclick="clearClosest('green')">None</button>
+      </div>
+    </div>`;
+  }
+
+  if(par===5){
+    html += `<div class="special-section">
+      <div class="special-header">Blue Plate — closest to pin (carries ${S.blueCarry})</div>
+      <div class="closest-btns">
+        ${S.players.map((p,i)=>`<button class="closest-btn ${hole.scores[i].closestBlue?'active':''}" onclick="setClosest(${i},'blue')">${p.name}</button>`).join('')}
+        <button class="closest-btn ${!hole.scores.some(s=>s.closestBlue)?'active':''}" onclick="clearClosest('blue')">None</button>
+      </div>
+    </div>`;
+  }
+
+  const murphyPlayers = hole.scores.map((s,i)=>({s,i})).filter(x=>x.s.badges.includes('murphy'));
+  if(murphyPlayers.length){
+    html += `<div class="special-section">
+      <div class="special-header">Murphy Results</div>
+      <div class="murphy-results">
+        ${murphyPlayers.map(({s,i})=>`
+          <div class="murphy-player-row">
+            <div class="murphy-player-name">${S.players[i].name}</div>
+            <button class="murphy-outcome-btn ${s.murphyResult==='made'?'made':''}" onclick="setMurphy(${i},'made')">Made ✓</button>
+            <button class="murphy-outcome-btn ${s.murphyResult==='missed'?'missed':''}" onclick="setMurphy(${i},'missed')">Missed ✗</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('special-section').innerHTML = html;
+}
+
+/* ── Event handlers ── */
+function upd(pi, field, val){
+  getHole(S.cur).scores[pi][field] = parseInt(val)||'';
+}
+
+function toggleBadge(pi, key){
+  const sc = getHole(S.cur).scores[pi];
+  const idx = sc.badges.indexOf(key);
+  if(idx>=0) sc.badges.splice(idx,1); else sc.badges.push(key);
+  renderScoring();
+  renderSpecials();
+}
+
+function toggleGive(pi, key){
+  const sc = getHole(S.cur).scores[pi];
+  const idx = sc.giveBadges.indexOf(key);
+  if(idx>=0) sc.giveBadges.splice(idx,1); else sc.giveBadges.push(key);
+  renderScoring();
+}
+
+function addSandy(pi){ getHole(S.cur).scores[pi].badges.push('sandy'); renderScoring(); }
+function rmSandy(pi){
+  const badges = getHole(S.cur).scores[pi].badges;
+  const idx = badges.lastIndexOf('sandy');
+  if(idx>=0) badges.splice(idx,1);
+  renderScoring();
+}
+
+function setClosest(pi, type){
+  const scores = getHole(S.cur).scores;
+  scores.forEach(s=>{ if(type==='green') s.closestGreen=false; else s.closestBlue=false; });
+  if(type==='green') scores[pi].closestGreen=true; else scores[pi].closestBlue=true;
+  renderSpecials();
+}
+
+function clearClosest(type){
+  getHole(S.cur).scores.forEach(s=>{ if(type==='green') s.closestGreen=false; else s.closestBlue=false; });
+  renderSpecials();
+}
+
+function setMurphy(pi, result){
+  getHole(S.cur).scores[pi].murphyResult = result;
+  renderSpecials();
+}
+
+function setPar(p){ getHole(S.cur).par = p; renderHole(); }
+function prevHole(){ if(S.cur>1){ S.cur--; renderAll(); } }
+function nextHole(){ if(S.cur<18){ S.cur++; renderAll(); } }
+
+/* ── Save Hole ── */
+function saveHole(){
+  const h = S.cur;
+  const hole = getHole(h);
+  const par = hole.par;
+  const n = S.players.length;
+  const delta = Array(n).fill(0);
+  const log = [];
+
+  // Per player badges
+  hole.scores.forEach((sc, i)=>{
+    const strokes = parseInt(sc.strokes)||0;
+    const putts = parseInt(sc.putts)||0;
+    const name = S.players[i].name;
+    if(!strokes) return;
+
+    const parOk = strokes <= par;
+    const birdie = strokes <= par-1;
+    const eagle = strokes <= par-2;
+    const albatross = strokes <= par-3;
+
+    if(sc.badges.includes('birdie') && birdie){ delta[i]+=1; log.push({t:'earn',m:`${name}: Birdie +1`}); }
+    if(sc.badges.includes('eagle') && eagle){ delta[i]+=5; log.push({t:'earn',m:`${name}: Eagle +5`}); }
+    if(sc.badges.includes('albatross') && albatross){ delta[i]+=20; log.push({t:'earn',m:`${name}: Albatross +20`}); }
+    if(sc.badges.includes('poley') && parOk){ delta[i]+=1; log.push({t:'earn',m:`${name}: Poley +1`}); }
+    if(sc.badges.includes('barky') && parOk){ delta[i]+=1; log.push({t:'earn',m:`${name}: Barky +1`}); }
+    if(sc.badges.includes('chippy') && parOk){ delta[i]+=1; log.push({t:'earn',m:`${name}: Chippy +1`}); }
+
+    const sandyCount = sc.badges.filter(b=>b==='sandy').length;
+    if(sandyCount>0 && parOk){
+      delta[i]+=sandyCount;
+      log.push({t:'earn',m:`${name}: Sandy ×${sandyCount} +${sandyCount}`});
+    }
+
+    if(sc.badges.includes('murphy') && sc.murphyResult){
+      if(sc.murphyResult==='made'){
+        delta[i]+=1;
+        log.push({t:'earn',m:`${name}: Murphy made +1`});
+      } else {
+        const others = S.players.map((_,j)=>j).filter(j=>j!==i);
+        others.forEach(j=>delta[j]+=1);
+        delta[i]-=others.length;
+        log.push({t:'give',m:`${name}: Murphy missed — gives 1 to each`});
+      }
+    }
+
+    // Give badges
+    const others = S.players.map((_,j)=>j).filter(j=>j!==i);
+    if(sc.giveBadges.includes('snake')){
+      const extra = putts > 2 ? putts-2 : 0;
+      const d = fibDots(extra);
+      if(d>0){
+        others.forEach(j=>delta[j]+=d);
+        delta[i]-=d*others.length;
+        log.push({t:'give',m:`${name}: 🐍 Snake (${putts} putts) — gives ${d} to each`});
+      }
+    }
+    if(sc.giveBadges.includes('crabby')){
+      const d = fibDots(1);
+      others.forEach(j=>delta[j]+=d);
+      delta[i]-=d*others.length;
+      log.push({t:'give',m:`${name}: 🦀 Crabby — gives ${d} to each`});
+    }
+    if(sc.giveBadges.includes('cheatie')){
+      others.forEach(j=>delta[j]+=1);
+      delta[i]-=others.length;
+      log.push({t:'give',m:`${name}: Cheatie — gives 1 to each`});
+    }
+    if(sc.giveBadges.includes('tincup')){
+      others.forEach(j=>delta[j]+=1);
+      delta[i]-=others.length;
+      log.push({t:'give',m:`${name}: Tin Cup — gives 1 to each`});
+    }
+  });
+
+  // Skins (handicap-adjusted)
+  const adjScores = hole.scores.map((sc,i)=>{
+    const strokes = parseInt(sc.strokes)||0;
+    if(!strokes) return null;
+    const hcp = S.players[i].hcp;
+    const strokesGiven = Math.floor(hcp/18) + (h <= (hcp%18) ? 1 : 0);
+    return strokes - strokesGiven;
+  });
+  const valid = adjScores.filter(s=>s!==null);
+  if(valid.length>0){
+    const best = Math.min(...valid);
+    const winners = adjScores.map((s,i)=>s===best?i:-1).filter(i=>i>=0);
+    if(winners.length===1){
+      S.players[winners[0]].skins += S.skinCarry;
+      log.push({t:'skin',m:`${S.players[winners[0]].name}: wins ${S.skinCarry} skin${S.skinCarry!==1?'s':''} (net ${best})`});
+      S.skinCarry = 1;
+    } else {
+      S.skinCarry++;
+      log.push({t:'carry',m:`Skins tied — carries (pot now ${S.skinCarry})`});
+    }
+  }
+
+  // Greenies & Blue Plates
+  hole.scores.forEach((sc,i)=>{
+    const strokes = parseInt(sc.strokes)||0;
+    if(!strokes) return;
+    const parOk = strokes <= par;
+    if(par===3){
+      if(sc.closestGreen && parOk){
+        delta[i]+=S.greenieCarry;
+        log.push({t:'earn',m:`${S.players[i].name}: Greenie ×${S.greenieCarry}`});
+        S.greenieCarry = 1;
+      } else if(sc.closestGreen && !parOk){
+        S.greenieCarry++;
+        log.push({t:'carry',m:`Greenie carries — closest didn't make par (carry: ${S.greenieCarry})`});
+      }
+    }
+    if(par===5){
+      if(sc.closestBlue && parOk){
+        delta[i]+=S.blueCarry;
+        log.push({t:'earn',m:`${S.players[i].name}: Blue Plate ×${S.blueCarry}`});
+        S.blueCarry = 1;
+      } else if(sc.closestBlue && !parOk){
+        S.blueCarry++;
+        log.push({t:'carry',m:`Blue Plate carries — closest didn't make par (carry: ${S.blueCarry})`});
+      }
+    }
+  });
+
+  // Check if nobody picked as closest on par3/par5
+  if(par===3 && !hole.scores.some(s=>s.closestGreen) && valid.length>0){
+    S.greenieCarry++;
+    log.push({t:'carry',m:`Greenie carries — no closest selected (carry: ${S.greenieCarry})`});
+  }
+  if(par===5 && !hole.scores.some(s=>s.closestBlue) && valid.length>0){
+    S.blueCarry++;
+    log.push({t:'carry',m:`Blue Plate carries — no closest selected (carry: ${S.blueCarry})`});
+  }
+
+  delta.forEach((d,i)=>S.players[i].dots+=d);
+  hole.log = log;
+  hole.saved = true;
+
+  if(S.cur<18) S.cur++;
+  renderAll();
+}
+
+/* ── Log ── */
+function renderLog(){
+  const cont = document.getElementById('log-content');
+  let html = '';
+  let any = false;
+  for(let h=1;h<=18;h++){
+    const hole = S.holes[h];
+    if(!hole||!hole.saved) continue;
+    any = true;
+    html += `<div class="log-hole-block">
+      <div class="log-hole-header">
+        <div class="log-hole-title">Hole ${h}</div>
+        <div class="log-hole-par">Par ${hole.par}</div>
+      </div>`;
+    if(!hole.log||!hole.log.length){
+      html += `<div class="log-event">No events recorded</div>`;
+    } else {
+      hole.log.forEach(e=>{
+        html += `<div class="log-event ${e.t||''}">${e.m||e}</div>`;
+      });
+    }
+    html += `</div>`;
+  }
+  cont.innerHTML = any ? html : `<div class="log-empty">No holes saved yet.</div>`;
+}
+
+/* ── Summary ── */
+function renderSummary(){
+  const sorted = S.players.map((p,i)=>({...p,i})).sort((a,b)=>b.dots-a.dots);
+  let warns = '';
+  if(S.skinCarry>1) warns += `<div class="carry-warning">⚠ Unclaimed skins: ${S.skinCarry}</div>`;
+  if(S.greenieCarry>1) warns += `<div class="carry-warning">⚠ Greenie carry: ${S.greenieCarry}</div>`;
+  if(S.blueCarry>1) warns += `<div class="carry-warning">⚠ Blue Plate carry: ${S.blueCarry}</div>`;
+  document.getElementById('carry-warnings').innerHTML = warns ? `<div class="carry-warnings">${warns}</div>` : '';
+
+  let tableHtml = `
+    <div class="standings-row header-row">
+      <div class="standings-cell header">#</div>
+      <div class="standings-cell header">Player</div>
+      <div class="standings-cell header" style="text-align:right">Dots</div>
+      <div class="standings-cell header" style="text-align:right">Skins</div>
+      <div class="standings-cell header" style="text-align:right">$</div>
+    </div>`;
+  sorted.forEach((p,rank)=>{
+    tableHtml += `<div class="standings-row ${rank===0?'first-place':''}">
+      <div class="standings-cell rank">${rank+1}</div>
+      <div class="standings-cell">${p.name}</div>
+      <div class="standings-cell dots">${p.dots}</div>
+      <div class="standings-cell skins">${p.skins}</div>
+      <div class="standings-cell money">${(p.dots*S.dotValue).toFixed(2)}</div>
+    </div>`;
+  });
+  document.getElementById('standings-table').innerHTML = tableHtml;
+}
+
+/* ── Tab switching ── */
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['hole','log','summary'][i]===tab));
+  document.getElementById('tab-hole').style.display = tab==='hole'?'block':'none';
+  document.getElementById('tab-log').style.display = tab==='log'?'block':'none';
+  document.getElementById('tab-summary').style.display = tab==='summary'?'block':'none';
+  if(tab==='log') renderLog();
+  if(tab==='summary') renderSummary();
+}
+
+initSetup();
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
